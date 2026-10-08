@@ -242,7 +242,19 @@
       "fields": {
         "app": {
           "name": "Application Name or URL",
-          "description": "The name of the app (e.g. Netflix, YouTube, Prime Video) or a deep link URL."
+          "description": "The app name or deep link URL. Optional when an application ID is supplied."
+        },
+        "app_id": {
+          "name": "Application ID",
+          "description": "Optional TV application ID to use instead of the ID from the app list."
+        },
+        "app_name": {
+          "name": "Application Name Override",
+          "description": "Optional application name to include in the launch request."
+        },
+        "url": {
+          "name": "Launch URL",
+          "description": "Optional URL or deep link to pass to the application."
         }
       }
     },

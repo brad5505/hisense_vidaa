@@ -19,11 +19,20 @@ def anyio_backend():
     return "asyncio"
 
 # Mock voluptuous if not installed
-if "voluptuous" not in sys.modules:
+try:
+    import voluptuous as vol
+except ImportError:
     vol = types.ModuleType("voluptuous")
     class Schema:
         def __init__(self, schema):
             self.schema = schema
+        def __call__(self, val):
+            return val
+    class Invalid(Exception):
+        pass
+    class All:
+        def __init__(self, *validators):
+            self.validators = validators
         def __call__(self, val):
             return val
     def Required(key, default=None): return key
@@ -36,6 +45,8 @@ if "voluptuous" not in sys.modules:
         def __call__(self, value):
             return self.type(value)
     vol.Schema = Schema
+    vol.Invalid = Invalid
+    vol.All = All
     vol.Required = Required
     vol.Optional = Optional
     vol.In = In

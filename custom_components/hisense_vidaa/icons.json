@@ -21,6 +21,9 @@
       },
       "probe_capabilities": {
         "default": "mdi:television-shimmer"
+      },
+      "trigger_reauth": {
+        "default": "mdi:cellphone-key"
       }
     },
     "notify": {

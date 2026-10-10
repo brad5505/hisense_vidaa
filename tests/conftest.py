@@ -19,11 +19,20 @@ def anyio_backend():
     return "asyncio"
 
 # Mock voluptuous if not installed
-if "voluptuous" not in sys.modules:
+try:
+    import voluptuous as vol
+except ImportError:
     vol = types.ModuleType("voluptuous")
     class Schema:
         def __init__(self, schema):
             self.schema = schema
+        def __call__(self, val):
+            return val
+    class Invalid(Exception):
+        pass
+    class All:
+        def __init__(self, *validators):
+            self.validators = validators
         def __call__(self, val):
             return val
     def Required(key, default=None): return key
@@ -36,6 +45,8 @@ if "voluptuous" not in sys.modules:
         def __call__(self, value):
             return self.type(value)
     vol.Schema = Schema
+    vol.Invalid = Invalid
+    vol.All = All
     vol.Required = Required
     vol.Optional = Optional
     vol.In = In
@@ -97,7 +108,7 @@ if "homeassistant" not in sys.modules:
             pass
         def add_update_listener(self, listener):
             return lambda: None
-        async def async_start_reauth(self, hass):
+        def async_start_reauth(self, hass):
             pass
     class ConfigFlow:
         def __init_subclass__(cls, domain=None, **kwargs):
@@ -366,6 +377,9 @@ if "homeassistant" not in sys.modules:
         _attr_should_poll = False
         def schedule_update_ha_state(self): pass
         def async_write_ha_state(self): pass
+        @property
+        def unique_id(self):
+            return getattr(self, "_attr_unique_id", None)
     entity_module.Entity = Entity
     helpers.entity = entity_module
     sys.modules["homeassistant.helpers.entity"] = entity_module

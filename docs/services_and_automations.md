@@ -7,7 +7,10 @@ This guide details the custom Home Assistant action services exposed by the Hise
 ## ⚡ Custom Services
 
 ### 1. `hisense_vidaa.launch_app`
-Launch an installed Smart TV application by name or direct URL.
+Launch an installed Smart TV application by name or direct URL. Optional `app_id`,
+`app_name`, and `url` fields override the values found in the TV's app list. This
+is useful when a launch needs a specific app ID and deep link. You can also omit
+`app` and provide only `app_id` to launch an app directly by ID.
 
 ```yaml
 action: hisense_vidaa.launch_app
@@ -16,6 +19,25 @@ target:
 data:
   app: "Netflix" # Options: Netflix, YouTube, Prime Video, Plex, Disney+, Stan, etc.
 ```
+
+To launch YouTube with a video URL (equivalent to the CLI's `--app-id`, app name,
+and `--url` arguments):
+
+```yaml
+action: hisense_vidaa.launch_app
+target:
+  entity_id: media_player.living_room_tv
+data:
+  app: "YouTube"
+  app_id: "3"
+  app_name: "YouTube"
+  url: "https://www.youtube.com/watch?v=REPPgPcw4hk"
+```
+
+The integration publishes the launch payload over its existing authenticated
+TLS/MQTT connection to the TV. Use this action rather than `mqtt.publish`:
+Home Assistant's generic MQTT broker connection is separate from the TV's
+certificate-authenticated MQTT session.
 
 ### 2. `hisense_vidaa.send_key`
 Send fast single or repeated key commands with configurable delays.

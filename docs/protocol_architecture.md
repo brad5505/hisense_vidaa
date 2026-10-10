@@ -80,7 +80,7 @@ When configured with `auth_profile: auto`:
    - `protocol >= 3290`: `[modern, middle, remotenow]`
    - `3000 <= protocol < 3290`: `[middle, modern, remotenow]`
    - `protocol < 3000`: `[remotenow, middle, modern]`
-3. If the broker rejects connection (`rc: 5` or `rc: 4`), the client automatically cascades through the fallback candidate list.
+3. If the broker rejects connection (`rc: 5`, `rc: 4`, or MQTT v5 reason codes `134`/`135`), the client automatically cascades through the fallback candidate list.
 4. If dynamic profiles fail and the broker accepts static credentials, the client auto-selects `legacy`.
 
 ---
@@ -94,7 +94,7 @@ stateDiagram-v2
     TokenIssued --> ActiveSession: Store Access Token (48h) + Refresh Token (30d)
     
     ActiveSession --> ActiveSession: Commands & Live State (Normal Operation)
-    ActiveSession --> Refreshing: Token Expired (>48h) or Connection rc:4/5
+    ActiveSession --> Refreshing: Token Expired (>48h) or Connection rc: 4/5/134/135
     
     Refreshing --> ActiveSession: New 48h Access Token Issued
     Refreshing --> InitialPairing: Refresh Token Expired (>30d offline)
@@ -172,6 +172,6 @@ Different VIDAA models expose varying subsets of the MQTT protocol depending on 
    - Dynamic credentials (`access_token` and `refresh_token`) are stored strictly in volatile system RAM on the TV (within the TV broker's `libmqttcrypt.so` runtime process table) rather than persistent flash memory.
    - In standard manual standby (**Tier 1 / `fake_sleep` / Fast Power On**), the embedded MQTT daemon stays resident and active tokens are preserved.
    - Under statutory automated energy-saving shutdowns (**Tier 2 / Auto Standby with No Signal / Auto Sleep**), the TV powers down the application processor to meet mandatory standby thresholds ($\le 0.5\text{W}$), terminating the broker process.
-   - Upon next power-up or wake, the broker starts with an unpopulated token table and actively rejects previously valid credentials with `rc: 4` (*Bad username or password*).
-   - The integration (v2.9.5+) specifically tracks broker rejection return codes (`connect_rc in (4, 5)`) versus standard standby timeouts (`connect_rc == 0`), auto-escalating to the Home Assistant Repairs dashboard after 3 consecutive rejections while preserving retry backoff for ordinary standby.
+   - Upon next power-up or wake, the broker starts with an unpopulated token table and actively rejects previously valid credentials with `rc: 4` (*Bad username or password*) or MQTT v5 reason code `134` (*Bad authentication data*).
+   - The integration specifically tracks broker rejection return codes (`connect_rc in (4, 5, 134, 135)`) versus standard standby timeouts (`connect_rc == 0`), auto-escalating to the Home Assistant Repairs dashboard after 3 consecutive rejections while preserving retry backoff for ordinary standby.
 

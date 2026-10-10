@@ -133,6 +133,68 @@ async def test_launch_app_service_matching():
 
 
 @pytest.mark.anyio
+async def test_launch_app_service_with_app_id_and_url_overrides():
+    """Test launch_app with app_id, app_name, and url parameter overrides."""
+    hass = MagicMock(spec=HomeAssistant)
+    hass.data = {}
+    registered_services = {}
+
+    def mock_async_register(domain, service, handler, *args, **kwargs):
+        registered_services[f"{domain}.{service}"] = handler
+
+    hass.services = MagicMock()
+    hass.services.has_service = MagicMock(return_value=False)
+    hass.services.async_register = MagicMock(side_effect=mock_async_register)
+    hass.async_add_executor_job = AsyncMock(side_effect=lambda func, *args: func(*args))
+
+    mock_client = MagicMock()
+    mock_client.ip = "192.168.50.12"
+    mock_client.apps = [
+        {"name": "YouTube", "appId": "3", "url": "https://youtube.com"},
+    ]
+    hass.data[DOMAIN] = {"entry_1": {"client": mock_client}}
+
+    await async_setup(hass, {})
+
+    # Launch with explicit app_id, app_name, and url override (e.g. YouTube video URL)
+    call_yt_url = ServiceCall(
+        domain=DOMAIN,
+        service=SERVICE_LAUNCH_APP,
+        data={
+            "app": "YouTube",
+            "app_id": "3",
+            "app_name": "YouTube",
+            "url": "https://www.youtube.com/watch?v=REPPgPcw4hk",
+        },
+    )
+    res = await registered_services[f"{DOMAIN}.{SERVICE_LAUNCH_APP}"](call_yt_url)
+    mock_client.launch_app.assert_called_with("3", "YouTube", "https://www.youtube.com/watch?v=REPPgPcw4hk")
+    assert res["count"] == 1
+    assert res["targets"][0]["app_id"] == "3"
+    assert res["targets"][0]["app_url"] == "https://www.youtube.com/watch?v=REPPgPcw4hk"
+
+    # Launch providing ONLY app_id (without app parameter)
+    call_id_only = ServiceCall(
+        domain=DOMAIN,
+        service=SERVICE_LAUNCH_APP,
+        data={
+            "app_id": "3",
+            "url": "https://www.youtube.com/watch?v=REPPgPcw4hk",
+        },
+    )
+    res_id_only = await registered_services[f"{DOMAIN}.{SERVICE_LAUNCH_APP}"](call_id_only)
+    mock_client.launch_app.assert_called_with("3", "YouTube", "https://www.youtube.com/watch?v=REPPgPcw4hk")
+    assert res_id_only["app"] == "3"
+    assert res_id_only["targets"][0]["app_id"] == "3"
+    assert res_id_only["targets"][0]["app_name"] == "YouTube"
+
+    # Schema validation: calling with neither app nor app_id should fail validation
+    from custom_components.hisense_vidaa.services import _validate_launch_app_data
+    with pytest.raises(vol.Invalid):
+        _validate_launch_app_data({})
+
+
+@pytest.mark.anyio
 async def test_picture_sound_and_text_input_services():
     """Test set_picture_setting, set_sound_setting, and send_text_input services."""
     hass = MagicMock(spec=HomeAssistant)

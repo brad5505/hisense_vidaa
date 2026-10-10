@@ -211,7 +211,10 @@ async def test_select_and_number_platforms_lifecycle(mock_client, mock_entry, mo
 async def test_entity_availability_matrix(mock_client, mock_entry):
     """Test availability of various entities during online and offline TV states."""
     from custom_components.hisense_vidaa.binary_sensor import HisenseVidaaMqttConnectedBinarySensor
-    from custom_components.hisense_vidaa.button import HisenseVidaaForceReconnectButton
+    from custom_components.hisense_vidaa.button import (
+        HisenseVidaaForceReconnectButton,
+        HisenseVidaaTriggerReauthButton,
+    )
     from custom_components.hisense_vidaa.number import HisenseVidaaBacklightNumber
     from custom_components.hisense_vidaa.select import HisenseVidaaPictureModeSelect
     from custom_components.hisense_vidaa.sensor import HisenseVidaaActiveSourceSensor
@@ -225,6 +228,7 @@ async def test_entity_availability_matrix(mock_client, mock_entry):
     s_source = HisenseVidaaActiveSourceSensor(mock_client, mock_entry)
     bs_mqtt = HisenseVidaaMqttConnectedBinarySensor(mock_client, mock_entry)
     btn_reconnect = HisenseVidaaForceReconnectButton(mock_client, mock_entry)
+    btn_reauth = HisenseVidaaTriggerReauthButton(mock_client, mock_entry)
     sw_debug = HisenseVidaaDebugLoggingSwitch(mock_client, mock_entry)
     sw_audio = HisenseVidaaAudioOnlySwitch(mock_client, mock_entry)
     sel_pic = HisenseVidaaPictureModeSelect(mock_client, mock_entry)
@@ -236,6 +240,7 @@ async def test_entity_availability_matrix(mock_client, mock_entry):
     assert s_source.available is True
     assert bs_mqtt.available is True
     assert btn_reconnect.available is True
+    assert btn_reauth.available is True
     assert sw_debug.available is True
     assert sw_audio.available is True
     assert sel_pic.available is True
@@ -246,6 +251,7 @@ async def test_entity_availability_matrix(mock_client, mock_entry):
     assert s_status.available is True
     assert bs_mqtt.available is True
     assert btn_reconnect.available is True
+    assert btn_reauth.available is True
     assert sw_debug.available is True
 
     # Control entities become unavailable while TV is offline

@@ -14,12 +14,15 @@ from homeassistant.exceptions import ServiceValidationError
 from .const import (
     ATTR_ACTION,
     ATTR_APP,
+    ATTR_APP_ID,
+    ATTR_APP_NAME,
     ATTR_DELAY,
     ATTR_KEY,
     ATTR_MENU_ID,
     ATTR_MENU_VALUE,
     ATTR_REPEAT,
     ATTR_TEXT,
+    ATTR_URL,
     DOMAIN,
     SERVICE_LAUNCH_APP,
     SERVICE_SEND_KEY,
@@ -218,6 +221,13 @@ def _resolve_service_targets(hass: HomeAssistant, call: ServiceCall) -> list[Any
     return clients
 
 
+def _validate_launch_app_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Require an app name/URL or an application ID for launch_app."""
+    if not data.get(ATTR_APP) and not data.get(ATTR_APP_ID):
+        raise vol.Invalid("Provide either 'app' or 'app_id'.")
+    return data
+
+
 def _target_selector_fields() -> dict[Any, Any]:
     """Return the target-selector fields accepted by every service schema."""
     return {
@@ -259,29 +269,34 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def handle_launch_app(call: ServiceCall) -> dict[str, Any]:
         """Handle launch_app service call."""
-        app = call.data.get(ATTR_APP)
+        app = str(call.data.get(ATTR_APP) or "")
+        requested_app_id = str(call.data.get(ATTR_APP_ID) or "")
         target_clients = _resolve_service_targets(hass, call)
         launched: list[dict[str, Any]] = []
+        lookup_ids = {value.lower() for value in (app, requested_app_id) if value}
 
         for client in target_clients:
             matched_app = None
             for a in getattr(client, "apps", []):
                 if isinstance(a, dict) and (
-                    str(a.get("name", "")).lower() == app.lower()
-                    or str(a.get("appName", "")).lower() == app.lower()
-                    or str(a.get("appId", "")).lower() == app.lower()
+                    (app and str(a.get("name") or a.get("appName") or "").lower() == app.lower())
+                    or str(a.get("appId") or a.get("app_id") or "").lower() in lookup_ids
                 ):
                     matched_app = a
                     break
 
             if matched_app:
-                app_id = str(matched_app.get("appId", ""))
+                app_id = str(matched_app.get("appId") or matched_app.get("app_id") or "")
                 app_name = str(matched_app.get("name") or matched_app.get("appName") or "")
                 app_url = str(matched_app.get("url") or matched_app.get("appUrl") or "")
             else:
                 app_id = ""
-                app_name = app
+                app_name = app or requested_app_id
                 app_url = app
+
+            app_id = requested_app_id or app_id
+            app_name = str(call.data.get(ATTR_APP_NAME, app_name))
+            app_url = str(call.data.get(ATTR_URL, app_url))
 
             await hass.async_add_executor_job(
                 client.launch_app,
@@ -297,7 +312,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             })
 
         return {
-            "app": app,
+            "app": app or requested_app_id,
             "targets": launched,
             "count": len(launched),
         }
@@ -360,10 +375,18 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         (
             SERVICE_LAUNCH_APP,
             handle_launch_app,
-            vol.Schema({
-                **_target_selector_fields(),
-                vol.Required(ATTR_APP): str,
-            }),
+            vol.Schema(
+                vol.All(
+                    {
+                        **_target_selector_fields(),
+                        vol.Optional(ATTR_APP): str,
+                        vol.Optional(ATTR_APP_ID): vol.Coerce(str),
+                        vol.Optional(ATTR_APP_NAME): str,
+                        vol.Optional(ATTR_URL): str,
+                    },
+                    _validate_launch_app_data,
+                )
+            ),
         ),
         (
             SERVICE_SET_PICTURE_SETTING,

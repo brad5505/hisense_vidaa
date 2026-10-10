@@ -182,7 +182,7 @@ class ConnectionManagerMixin:
             self.connected = False
             _LOGGER.warning("[%s] Failed to connect to TV MQTT broker (rc: %d)", self.ip, rc)
 
-            if rc in (4, 5):
+            if rc in (4, 5, 134, 135):
                 with contextlib.suppress(Exception):
                     client.loop_stop()
 
@@ -193,7 +193,7 @@ class ConnectionManagerMixin:
                 )
                 return
 
-            if rc in (4, 5):
+            if rc in (4, 5, 134, 135):
                 self._token_manager.handle_auth_rejection(rc)
 
     def _on_disconnect(self: HisenseTvClient, client: mqtt.Client, userdata: Any, rc: int) -> None:

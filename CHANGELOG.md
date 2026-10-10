@@ -2,6 +2,26 @@
 
 All notable changes to the Hisense VIDAA TV integration will be documented in this file.
 
+## [2.10.6] - 2026-10-11
+
+### Added
+- **LAUNCH APP SERVICE OVERRIDES & DEEP LINKING (`services.py`, `services.yaml`, `const.py`)**:
+  - Added optional `app_id`, `app_name`, and `url` parameters to `hisense_vidaa.launch_app` service action (#39, #40).
+  - Enables launching smart TV apps directly by numeric application ID without needing the display name in the app list.
+  - Enables launching YouTube directly with a video deep-link URL (e.g. `url: "https://www.youtube.com/watch?v=..."`).
+  - Added schema validation requiring either `app` or `app_id`.
+  - Added documentation and YAML automation examples in `docs/services_and_automations.md`.
+- **FORCE RE-PAIRING / RE-AUTHENTICATION BUTTON (`button.py`, `icons.json`)**:
+  - Added dedicated diagnostic button `HisenseVidaaTriggerReauthButton` (`button.trigger_reauth` / "Trigger Re-pairing").
+  - Allows manually initiating Home Assistant's native re-authentication and PIN pairing flow directly from the device page without needing an existing error or repair issue.
+- **COMPREHENSIVE TRANSLATIONS PARITY (`translations/*`, `strings.json`)**:
+  - Added entity and service translation entries across all supported languages: English (`en.json`), German (`de.json`), Spanish (`es.json`), French (`fr.json`), Italian (`it.json`), Portuguese (`pt.json`), and Brazilian Portuguese (`pt-BR.json`).
+
+### Fixed
+- **MQTT v5 REASON CODES 134 & 135 REJECTION HANDLING (`protocol/auth_lifecycle.py`, `protocol/connection.py`, `protocol/pairing.py`, `protocol/ping.py`)**:
+  - Added explicit handling for MQTT v5 Reason Codes `134` (*Bad authentication data*) and `135` (*Not authorized*) returned by modern firmware brokers when stored credentials or refresh tokens are invalidated.
+  - Ensures the broker rejection failure counter correctly increments and triggers Home Assistant's native re-authentication repair flow instead of silently resetting the counter.
+
 ## [2.10.5] - 2026-10-03
 
 ### Added

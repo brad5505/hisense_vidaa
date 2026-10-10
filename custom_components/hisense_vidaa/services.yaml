@@ -49,9 +49,30 @@ launch_app:
   fields:
     app:
       name: App
-      description: Application name or URL (e.g. Netflix, YouTube, Prime Video, Plex, netflix://).
-      required: true
-      example: Netflix
+      description: Application name or URL; optional when app_id is supplied.
+      required: false
+      example: YouTube
+      selector:
+        text:
+    app_id:
+      name: App ID
+      description: TV application ID to launch. If omitted, the ID is looked up from the app list.
+      required: false
+      example: "3"
+      selector:
+        text:
+    app_name:
+      name: App Name
+      description: Application name to include in the launch request.
+      required: false
+      example: YouTube
+      selector:
+        text:
+    url:
+      name: URL
+      description: URL or deep link to pass to the application.
+      required: false
+      example: https://youtu.be/dQw4w9WgXcQ?si=dflf0w3Fuwu2rnI2
       selector:
         text:
 

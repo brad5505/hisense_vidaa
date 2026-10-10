@@ -40,6 +40,7 @@ async def async_setup_entry(
         HisenseVidaaForceReconnectButton(client, entry),
         HisenseVidaaSyncClockButton(client, entry),
         HisenseVidaaProbeCapabilitiesButton(client, entry),
+        HisenseVidaaTriggerReauthButton(client, entry),
     ]
 
     async_add_entities(entities)
@@ -127,3 +128,20 @@ class HisenseVidaaProbeCapabilitiesButton(HisenseVidaaBaseButton):
                 CONF_ENABLE_SOUND_CONTROLS: sound_supported or self._entry.options.get(CONF_ENABLE_SOUND_CONTROLS, False),
             }
             self.hass.config_entries.async_update_entry(self._entry, options=new_options)
+
+
+class HisenseVidaaTriggerReauthButton(HisenseVidaaBaseButton):
+    """Button to manually initiate re-pairing and re-authentication with the TV."""
+
+    _attr_translation_key = "trigger_reauth"
+    _attr_icon = "mdi:cellphone-key"
+
+    def __init__(self, client: HisenseTvClient, entry: ConfigEntry) -> None:
+        super().__init__(client, entry)
+        self._attr_unique_id = f"{self._entry_id}_trigger_reauth"
+
+    async def async_press(self) -> None:
+        """Handle button press to trigger re-authentication flow."""
+        _LOGGER.info("[%s] Manually triggering re-pairing flow for TV", self._client.ip)
+        self._entry.async_start_reauth(self.hass)
+

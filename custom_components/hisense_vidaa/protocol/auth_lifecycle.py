@@ -209,7 +209,7 @@ class TokenLifecycleManager:
                 self.broker_rejection_failures = 0
             else:
                 self.rejected_refresh_failures += 1
-                if self.last_refresh_connect_rc in (4, 5):
+                if self.last_refresh_connect_rc in (4, 5, 134, 135):
                     self.broker_rejection_failures += 1
                 else:
                     self.broker_rejection_failures = 0

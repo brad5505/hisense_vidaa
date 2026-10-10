@@ -49,7 +49,7 @@ The integration automatically detects and supports multiple generations of Hisen
 - **Sound Mode Selector (`select`)**: Switch real-time TV sound equalizer modes (`Standard`, `Theatre`, `Music`, `Speech`, `Late Night`, `Sports`) and audio output routing (`select.{tv}_audio_output`).
 - **On-Screen Toast Notifications (`notify`)**: Send customized on-screen toast messages and alert banners directly to the TV screen via `notify.send_message`.
 - **Direct Text Input (`send_text_input` service)**: Inject virtual keyboard text directly into on-screen search bars and input fields across apps.
-- **Rich Diagnostic Sensors**: Active source (with dynamic HDMI-CEC device naming), active Smart TV app, audio output mode, MQTT connection state, and session status.
+- **Rich Diagnostic Sensors & Utility Buttons**: Active source (with dynamic HDMI-CEC device naming), active Smart TV app, audio output mode, MQTT connection state, and session status, along with dedicated diagnostic buttons for forcing reconnection, probing picture/sound capabilities, UPnP clock sync, and triggering manual re-pairing.
 - **Network Resilience**: Subnet-directed Wake-on-LAN with dual-MAC fallback (Ethernet + Wi-Fi) for reliable power-on from deep standby, clock synchronization via UPnP, and automatic 30-day token refresh.
 - **Flexible SSL Handling**: Automatic in-memory extraction for PKCS#12 bundles (`.p12` / `.pfx`) and support for standard PEM pairs (`.pem`, `.crt`, `.key`) stored in `/config/ssl`.
 - **Tabbed Options Flow**: Beautiful, categorized options menu (General & Power, Sources & Media, Remote Key Timings, SSL Certificates) for adjusting settings without re-pairing.
@@ -155,7 +155,7 @@ The integration provides custom Home Assistant actions for advanced automation a
 | Action | Description | Key Parameters |
 | :--- | :--- | :--- |
 | `hisense_vidaa.send_key` | Sends navigation, playback, and numerical remote key commands. | `key`, `repeat`, `delay` |
-| `hisense_vidaa.launch_app` | Launches installed smart TV applications by display name or app ID. | `app` |
+| `hisense_vidaa.launch_app` | Launches installed smart TV applications by display name, app ID, and optional video deep-link URL. | `app`, `app_id`, `app_name`, `url` |
 | `hisense_vidaa.set_picture_setting` | Direct hardware adjustment of TV picture mode settings. | `menu_id`, `menu_value` |
 | `hisense_vidaa.set_sound_setting` | Direct hardware adjustment of TV sound and equalizer settings. | `menu_id`, `menu_value` |
 | `hisense_vidaa.send_text_input` | Sends text strings directly to active onscreen search boxes. | `text`, `action` |

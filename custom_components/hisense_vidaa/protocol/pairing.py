@@ -152,7 +152,13 @@ async def async_start_pairing_handshake(client: Any) -> None:
             except Exception as e:
                 last_err = e
                 err_msg = str(e)
-                if "code 5" in err_msg or "code 4" in err_msg or "Not authorized" in err_msg:
+                if (
+                    "code 5" in err_msg
+                    or "code 4" in err_msg
+                    or "code 134" in err_msg
+                    or "code 135" in err_msg
+                    or "Not authorized" in err_msg
+                ):
                     _LOGGER.info("[%s] Auth profile %s rejected by TV (%s), falling back...", client.ip, p, err_msg)
                     continue
                 raise

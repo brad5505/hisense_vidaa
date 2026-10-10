@@ -18,6 +18,9 @@ All notable changes to the Hisense VIDAA TV integration will be documented in th
   - Added entity and service translation entries across all supported languages: English (`en.json`), German (`de.json`), Spanish (`es.json`), French (`fr.json`), Italian (`it.json`), Portuguese (`pt.json`), and Brazilian Portuguese (`pt-BR.json`).
 
 ### Fixed
+- **REAUTHENTICATION FLOW MQTT CLIENT COLLISION (`flow_reauth.py`)**:
+  - Disconnected any existing running background client for the target entry before initiating re-authentication pairing.
+  - Prevents twin MQTT clients from colliding under the same Client ID, eliminating connection bounce (`rc: 7`) and PIN validation timeouts.
 - **MQTT v5 REASON CODES 134 & 135 REJECTION HANDLING (`protocol/auth_lifecycle.py`, `protocol/connection.py`, `protocol/pairing.py`, `protocol/ping.py`)**:
   - Added explicit handling for MQTT v5 Reason Codes `134` (*Bad authentication data*) and `135` (*Not authorized*) returned by modern firmware brokers when stored credentials or refresh tokens are invalidated.
   - Ensures the broker rejection failure counter correctly increments and triggers Home Assistant's native re-authentication repair flow instead of silently resetting the counter.

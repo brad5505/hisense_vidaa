@@ -761,5 +761,47 @@ async def test_reconfigure_aborts_when_new_ip_belongs_to_another_tv(monkeypatch)
     assert hass.config_entries.async_update_entry.called is False
 
 
+@pytest.mark.anyio
+async def test_reauth_confirm_disconnects_existing_running_client_before_start_auth(monkeypatch):
+    """Test reauth_confirm disconnects running client to prevent MQTT client ID collisions."""
+    hass = MagicMock(spec=HomeAssistant)
+    entry = MagicMock()
+    entry.entry_id = "test_entry"
+    entry.data = {
+        CONF_IP_ADDRESS: "192.168.50.12",
+        CONF_MAC_ADDRESS: "e8:51:77:ec:98:1c",
+        CONF_AUTH_PROFILE: "auto",
+        CONF_USE_SSL: True,
+    }
+
+    running_client = MagicMock()
+    running_client.ip = "192.168.50.12"
+    running_client.mac = "e8:51:77:ec:98:1c"
+    hass.data = {DOMAIN: {"test_entry": {"client": running_client}}}
+
+    flow = _reauth_flow(hass, entry, "test_entry")
+    flow.ip_address = "192.168.50.12"
+    flow.mac_address = "e8:51:77:ec:98:1c"
+    flow.auth_profile = "auto"
+    flow.use_ssl = True
+
+    events = []
+    running_client.disconnect = MagicMock(side_effect=lambda: events.append("disconnect_existing"))
+
+    async def mock_start_auth(self):
+        events.append("start_auth")
+
+    monkeypatch.setattr(
+        "custom_components.hisense_vidaa.client.HisenseTvClient.async_start_auth",
+        mock_start_auth,
+    )
+
+    result = await flow.async_step_reauth_confirm(user_input={})
+    assert result["type"] == "form"
+    assert result["step_id"] == "auth"
+    assert events == ["disconnect_existing", "start_auth"]
+
+
+
 
 

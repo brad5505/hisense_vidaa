@@ -102,6 +102,10 @@ class ReauthFlowMixin:
         if user_input is not None:
             from .client import HisenseTvClient
 
+            # Disconnect any existing running client for this entry to prevent
+            # duplicate MQTT Client ID collisions during the reauth flow.
+            await self._async_disconnect_existing_client()
+
             self.client = HisenseTvClient(
                 self.ip_address,
                 self.mac_address,
@@ -114,11 +118,6 @@ class ReauthFlowMixin:
                 await self.client.async_start_auth()
 
                 if self.auth_profile in ("legacy", "static"):
-                    # The static session uses the fixed client-id
-                    # "hisenseservice": drop this entry's live client first so the
-                    # probe does not kick its running MQTT session (sibling
-                    # entries are left untouched via the entry_id scoping).
-                    await self._async_disconnect_existing_client()
                     # The TV may demand a one-off PIN pairing.
                     return await self._async_static_pairing_step(True, "reauth_successful")
                 return await self.async_step_auth()

@@ -198,6 +198,7 @@ class ConnectionManagerMixin:
 
     def _on_disconnect(self: HisenseTvClient, client: mqtt.Client, userdata: Any, rc: int) -> None:
         self.connected = False
+        self._last_initial_query_time = 0.0
         _LOGGER.debug("[%s] Disconnected from TV MQTT broker (rc: %d)", self.ip, rc)
         if (self._auth_future and not self._auth_future.done()) or (self._auth_code_future and not self._auth_code_future.done()):
             with contextlib.suppress(Exception):

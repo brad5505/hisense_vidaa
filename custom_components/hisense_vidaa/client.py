@@ -102,6 +102,8 @@ class HisenseTvClient(CallbackRegistryMixin, TvStateMixin, ConnectionManagerMixi
         self._reconnect_lock = threading.Lock()
         self._last_reconnect_time: float = 0.0
         self._query_timer: threading.Timer | None = None
+        self._query_lock = threading.Lock()
+        self._last_initial_query_time: float = 0.0
 
         # Topic paths
         self.topicBrcsBasepath = TOPIC_BROADCAST_BASEPATH

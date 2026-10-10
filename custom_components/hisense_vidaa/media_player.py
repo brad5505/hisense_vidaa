@@ -87,11 +87,12 @@ class HisenseVidaaMediaPlayer(HisenseVidaaEntity, MediaPlayerEntity):
         self._client.register_sound_callback(self._handle_sound_update)
         self._client.register_disconnected_callback(self._handle_disconnected)
 
-        # Sync state and query initial state now that callbacks are registered and active.
+        # Sync state now that callbacks are registered and active.
         # Do not assume "on": the broker is also reachable in standby (fake_sleep).
         if getattr(self._client, "connected", False):
             self._state = STATE_ON if self._client.is_on else STATE_OFF
-            await self.hass.async_add_executor_job(self._client.query_initial_state)
+            if not self._source_dict or not self._app_dict:
+                await self.hass.async_add_executor_job(self._client.query_initial_state)
 
     async def async_will_remove_from_hass(self) -> None:
         """Unregister callbacks when entity is removed."""

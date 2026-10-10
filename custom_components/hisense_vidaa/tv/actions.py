@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import time
@@ -31,13 +32,27 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-def query_initial_state(client: HisenseTvClient) -> None:
+def query_initial_state(client: HisenseTvClient, min_interval: float = 3.0) -> None:
     """Queries initial state, volume, source list, app list, and settings from TV."""
-    if client.connected and client.mqtt_client:
-        client.mqtt_client.publish(client.topicTVUIBasepath + "actions/gettvstate", "")
-        time.sleep(0.05)
-        # The TV never volunteers its capability set; request it so
-        # `has_notifications` can populate (mirrors the reference connect burst).
+    if not (client.connected and client.mqtt_client):
+        return
+
+    now = time.time()
+    with getattr(client, "_query_lock", contextlib.nullcontext()):
+        last_time = getattr(client, "_last_initial_query_time", 0.0)
+        if now - last_time < min_interval:
+            _LOGGER.debug(
+                "[%s] Suppressing duplicate query_initial_state call (%.2fs since last query)",
+                client.ip,
+                now - last_time,
+            )
+            return
+        client._last_initial_query_time = now
+
+        # The TV already broadcasts its live state automatically on
+        # /remoteapp/mobile/broadcast/ui_service/state upon MQTT connect.
+        # Do NOT publish actions/gettvstate: on VIDAA firmware, gettvstate
+        # is the pairing challenge trigger that commands the TV to pop up a PIN.
         client.mqtt_client.publish(client.topicTVUIBasepath + "actions/capability", "")
         time.sleep(0.05)
         client.mqtt_client.publish(client.topicTVPSBasepath + "actions/getvolume", "")

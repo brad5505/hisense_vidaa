@@ -66,7 +66,8 @@ class HisenseVidaaRemote(HisenseVidaaEntity, RemoteEntity):
 
         # Sync state immediately if client is already connected
         if getattr(self._client, "connected", False):
-            await self.hass.async_add_executor_job(self._client.query_initial_state)
+            self._is_on = bool(self._client.is_on)
+            self._current_app = self._client.current_app
 
     async def async_will_remove_from_hass(self) -> None:
         """Unregister callbacks when entity is removed."""

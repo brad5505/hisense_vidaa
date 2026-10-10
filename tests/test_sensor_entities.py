@@ -12,6 +12,8 @@ from custom_components.hisense_vidaa.binary_sensor import (
 from custom_components.hisense_vidaa.button import (
     HisenseVidaaForceReconnectButton,
     HisenseVidaaSyncClockButton,
+    HisenseVidaaTriggerReauthButton,
+    async_setup_entry as async_setup_buttons,
 )
 from custom_components.hisense_vidaa.sensor import (
     HisenseVidaaActiveAppSensor,
@@ -119,6 +121,17 @@ async def test_button_entities(mock_client, mock_entry, monkeypatch):
     b_sync = HisenseVidaaSyncClockButton(mock_client, mock_entry)
     b_sync.hass = hass
     await b_sync.async_press()
+
+    b_reauth = HisenseVidaaTriggerReauthButton(mock_client, mock_entry)
+    b_reauth.hass = hass
+    assert b_reauth.unique_id == "test_entry_id_trigger_reauth"
+    await b_reauth.async_press()
+    mock_entry.async_start_reauth.assert_called_once_with(hass)
+
+    added_buttons = []
+    await async_setup_buttons(hass, mock_entry, lambda entities: added_buttons.extend(entities))
+    assert len(added_buttons) == 4
+    assert any(isinstance(b, HisenseVidaaTriggerReauthButton) for b in added_buttons)
 
 
 @pytest.mark.anyio

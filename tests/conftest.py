@@ -108,7 +108,7 @@ if "homeassistant" not in sys.modules:
             pass
         def add_update_listener(self, listener):
             return lambda: None
-        async def async_start_reauth(self, hass):
+        def async_start_reauth(self, hass):
             pass
     class ConfigFlow:
         def __init_subclass__(cls, domain=None, **kwargs):
@@ -377,6 +377,9 @@ if "homeassistant" not in sys.modules:
         _attr_should_poll = False
         def schedule_update_ha_state(self): pass
         def async_write_ha_state(self): pass
+        @property
+        def unique_id(self):
+            return getattr(self, "_attr_unique_id", None)
     entity_module.Entity = Entity
     helpers.entity = entity_module
     sys.modules["homeassistant.helpers.entity"] = entity_module

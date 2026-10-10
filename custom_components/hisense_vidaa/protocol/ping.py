@@ -129,7 +129,7 @@ def ping_tv(
             if conn_rc[0] == 0:
                 results["mqtt_connected"] = True
                 results["mqtt_status"] = "Connected successfully"
-            elif conn_rc[0] in (4, 5):
+            elif conn_rc[0] in (4, 5, 134, 135):
                 results["mqtt_status"] = "Rejected: Bad username or password / Expired access token"
             elif conn_rc[0] is not None:
                 results["mqtt_status"] = f"Broker rejected connection with code {conn_rc[0]}"

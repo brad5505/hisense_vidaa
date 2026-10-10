@@ -500,6 +500,33 @@ def test_broker_rejection_threshold_triggers_auth_failed():
     mock_auth_failed.assert_called_once()
 
 
+def test_broker_rejection_mqtt5_reason_code_134_triggers_auth_failed():
+    """Auth failed MUST fire when the TV broker returns MQTT v5 Reason Code 134 (Bad Authentication Data)."""
+    now = int(time.time())
+    client = HisenseTvClient(
+        ip="192.168.50.12",
+        refresh_token="broker_invalidated_token",
+        refresh_token_time=now - 3600,
+        refresh_token_duration=30,
+    )
+    # Simulate TV broker actively rejecting refresh credentials with MQTT v5 RC 134
+    client._last_refresh_connect_rc = 134
+    mock_auth_failed = MagicMock()
+    client.register_auth_failed_callback(mock_auth_failed)
+
+    for attempt in range(1, client.MAX_BROKER_REJECTION_ATTEMPTS):
+        with patch.object(client, "check_and_refresh_token", return_value=False):
+            client._refresh_token_and_update_creds()
+        mock_auth_failed.assert_not_called()
+        client._refreshing_token = False
+
+    with patch.object(client, "check_and_refresh_token", return_value=False):
+        client._refresh_token_and_update_creds()
+
+    mock_auth_failed.assert_called_once()
+
+
+
 def test_broker_rejection_threshold_not_reached_suppresses_auth_failed():
     """Auth failed must NOT fire when the broker rejection count is below MAX_BROKER_REJECTION_ATTEMPTS,
     even if the refresh token appears valid."""

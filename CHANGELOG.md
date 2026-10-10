@@ -18,6 +18,11 @@ All notable changes to the Hisense VIDAA TV integration will be documented in th
   - Added entity and service translation entries across all supported languages: English (`en.json`), German (`de.json`), Spanish (`es.json`), French (`fr.json`), Italian (`it.json`), Portuguese (`pt.json`), and Brazilian Portuguese (`pt-BR.json`).
 
 ### Fixed
+- **ELIMINATED UNWANTED STARTUP PAIRING PIN PROMPTS (`tv/actions.py`, `client.py`, `protocol/connection.py`, `media_player.py`, `remote.py`)**:
+  - Eliminated unwanted physical 4-digit pairing PIN dialogs appearing on-screen during Home Assistant reboots and container restarts.
+  - Removed `actions/gettvstate` from the initial state query burst; on VIDAA OS firmware, publishing `gettvstate` commands the TV to pop up an on-screen pairing PIN challenge on unassociated UI topics, whereas the TV already broadcasts live state automatically upon MQTT connection via `/remoteapp/mobile/broadcast/ui_service/state`.
+  - Added thread-safe 3.0-second debouncing to initial state queries (`query_initial_state`) to prevent broker command flooding.
+  - Removed duplicate redundant initial query calls during `media_player` and `remote` entity addition.
 - **REAUTHENTICATION FLOW MQTT CLIENT COLLISION (`flow_reauth.py`)**:
   - Disconnected any existing running background client for the target entry before initiating re-authentication pairing.
   - Prevents twin MQTT clients from colliding under the same Client ID, eliminating connection bounce (`rc: 7`) and PIN validation timeouts.

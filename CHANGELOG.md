@@ -2,6 +2,21 @@
 
 All notable changes to the Hisense VIDAA TV integration will be documented in this file.
 
+## [2.10.6] - 2026-10-11
+
+### Added
+- **LAUNCH APP SERVICE OVERRIDES & DEEP LINKING (`services.py`, `services.yaml`, `const.py`)**:
+  - Added optional `app_id`, `app_name`, and `url` parameters to `hisense_vidaa.launch_app` service action (#39, #40).
+  - Enables launching smart TV apps directly by numeric application ID without needing the display name in the app list.
+  - Enables launching YouTube directly with a video deep-link URL (e.g. `url: "https://www.youtube.com/watch?v=..."`).
+  - Added schema validation requiring either `app` or `app_id`.
+  - Added documentation and YAML automation examples in `docs/services_and_automations.md`.
+- **FORCE RE-PAIRING / RE-AUTHENTICATION BUTTON (`button.py`, `icons.json`)**:
+  - Added dedicated diagnostic button `HisenseVidaaTriggerReauthButton` (`button.trigger_reauth` / "Trigger Re-pairing").
+  - Allows manually initiating Home Assistant's native re-authentication and PIN pairing flow directly from the device page without needing an existing error or repair issue.
+- **COMPREHENSIVE TRANSLATIONS PARITY (`translations/*`, `strings.json`)**:
+  - Added entity and service translation entries across all supported languages: English (`en.json`), German (`de.json`), Spanish (`es.json`), French (`fr.json`), Italian (`it.json`), Portuguese (`pt.json`), and Brazilian Portuguese (`pt-BR.json`).
+
 ## [2.10.5] - 2026-10-03
 
 ### Added

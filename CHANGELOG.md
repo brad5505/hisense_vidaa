@@ -17,6 +17,11 @@ All notable changes to the Hisense VIDAA TV integration will be documented in th
 - **COMPREHENSIVE TRANSLATIONS PARITY (`translations/*`, `strings.json`)**:
   - Added entity and service translation entries across all supported languages: English (`en.json`), German (`de.json`), Spanish (`es.json`), French (`fr.json`), Italian (`it.json`), Portuguese (`pt.json`), and Brazilian Portuguese (`pt-BR.json`).
 
+### Fixed
+- **MQTT v5 REASON CODES 134 & 135 REJECTION HANDLING (`protocol/auth_lifecycle.py`, `protocol/connection.py`, `protocol/pairing.py`, `protocol/ping.py`)**:
+  - Added explicit handling for MQTT v5 Reason Codes `134` (*Bad authentication data*) and `135` (*Not authorized*) returned by modern firmware brokers when stored credentials or refresh tokens are invalidated.
+  - Ensures the broker rejection failure counter correctly increments and triggers Home Assistant's native re-authentication repair flow instead of silently resetting the counter.
+
 ## [2.10.5] - 2026-10-03
 
 ### Added
